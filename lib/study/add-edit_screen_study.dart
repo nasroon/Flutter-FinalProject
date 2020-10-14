@@ -42,6 +42,9 @@ class _SignUpFormState extends State<SignUpForm> {
 
   List<Widget> getFormWidget() {
     List<Widget> formWidget = new List();
+    formWidget.add(new SizedBox(
+      height: 20,
+    ));
     formWidget.add(new Row(children: <Widget>[
       Text(
         "Event : ",
@@ -52,7 +55,13 @@ class _SignUpFormState extends State<SignUpForm> {
       Container(
         width: MediaQuery.of(context).size.width / 2,
         child: TextFormField(
-          decoration: InputDecoration(labelText: 'Enter Event Name'),
+          decoration: InputDecoration(
+            labelText: 'Enter Study Name',
+            border: new OutlineInputBorder(
+              borderRadius: new BorderRadius.circular(25.0),
+              borderSide: new BorderSide(),
+            ),
+          ),
           validator: (value) {
             if (value.isEmpty) {
               return 'Please enter a name';
@@ -67,7 +76,9 @@ class _SignUpFormState extends State<SignUpForm> {
         ),
       )
     ]));
-
+    formWidget.add(new SizedBox(
+      height: 20,
+    ));
     formWidget.add(new Row(children: <Widget>[
       Text(
         "Milestone : ",
@@ -78,7 +89,13 @@ class _SignUpFormState extends State<SignUpForm> {
       Container(
         width: MediaQuery.of(context).size.width / 2,
         child: TextFormField(
-          decoration: InputDecoration(labelText: 'Enter Event Name'),
+          decoration: InputDecoration(
+            labelText: 'Enter MileStone',
+            border: new OutlineInputBorder(
+              borderRadius: new BorderRadius.circular(25.0),
+              borderSide: new BorderSide(),
+            ),
+          ),
           validator: (value) {
             if (value.isEmpty) {
               return 'Please enter a name';
@@ -102,6 +119,12 @@ class _SignUpFormState extends State<SignUpForm> {
     ));
 
     formWidget.add(new TextFormField(
+      decoration: InputDecoration(
+        border: new OutlineInputBorder(
+          borderRadius: new BorderRadius.circular(25.0),
+          borderSide: new BorderSide(),
+        ),
+      ),
       keyboardType: TextInputType.multiline,
       minLines: 1,
       maxLines: 5,
@@ -157,6 +180,14 @@ class BasicDateTimeField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(children: <Widget>[
       DateTimeField(
+        decoration: InputDecoration(
+          labelText: "Enter Time",
+          fillColor: Colors.white,
+          border: new OutlineInputBorder(
+            borderRadius: new BorderRadius.circular(25.0),
+            borderSide: new BorderSide(),
+          ),
+        ),
         format: format,
         onShowPicker: (context, currentValue) async {
           final date = await showDatePicker(

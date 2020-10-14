@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:weekday_selector/weekday_selector.dart';
 // class LifeParameter{
 //   final String title;
 //   LifeParameter(this.title);
@@ -33,24 +34,8 @@ class SignUpForm extends StatefulWidget {
 }
 
 class _SignUpFormState extends State<SignUpForm> {
-  List<bool> day = [
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ];
-  List<String> Nameday = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  bool pressed = true;
+  final values = List.filled(7, false);
   final _formKey = GlobalKey<FormState>();
   final nameHolder = TextEditingController();
   String _name = '';
@@ -119,7 +104,7 @@ class _SignUpFormState extends State<SignUpForm> {
           groupValue: _maritalStatus,
           onChanged: (value) {
             setState(() {
-              cleardata(value.toString());
+              cleardata('each');
               _maritalStatus = value;
             });
           },
@@ -168,24 +153,31 @@ class _SignUpFormState extends State<SignUpForm> {
           groupValue: _maritalStatus,
           onChanged: (value) {
             setState(() {
-              cleardata(value.toString());
+              cleardata('specific');
               _maritalStatus = value;
             });
           },
         ),
-        Container(
-            child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            checkbox("Mon", day[0]),
-            checkbox("Tu", day[1]),
-            checkbox("Wed", day[2]),
-            checkbox("Thur", day[3]),
-            checkbox("Fri", day[4]),
-            checkbox("Sat", day[5]),
-            checkbox("Sun", day[6]),
+            Text(
+              'The days that are currently selected are: ${valuesToEnglishDays(values, true)}.',
+              style: pressed
+                  ? TextStyle(color: Colors.black)
+                  : TextStyle(color: Colors.red),
+            ),
+            WeekdaySelector(
+              selectedFillColor: Colors.indigo,
+              onChanged: (v) {
+                setState(() {
+                  values[v % 7] = !values[v % 7];
+                });
+              },
+              values: values,
+            ),
           ],
-        ))
+        )
       ],
     ));
 
@@ -200,17 +192,33 @@ class _SignUpFormState extends State<SignUpForm> {
           width: MediaQuery.of(context).size.width / 2, child: BasicTimeField())
     ]));
 
+    bool checking() {
+      if (_maritalStatus == 'each')
+        return true;
+      else if (_maritalStatus == 'specific') {
+        if (valuesToEnglishDays(values, true) == '-') {
+          setState(() {
+            pressed = false;
+          });
+          return false;
+        }
+        else {
+          setState(() {
+            pressed = true;
+          });
+        }
+        return true;
+      }
+    }
+
     void onPressedSubmit() {
-      if (_formKey.currentState.validate()) {
+      if (_formKey.currentState.validate() && checking()) {
         _formKey.currentState.save();
         print("Name " + _name);
-        print("Day " + _day);
         print("Repeated " + _maritalStatus);
-        print(times.toString());
-        for (int i = 0; i < day.length; i++)
-          if (day[i]) {
-            print(Nameday[i]);
-          }
+        print("Every " + _day);
+        print(valuesToEnglishDays(values, true));
+        print(pickTime(times));
 
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Form Submitted')));
@@ -229,52 +237,43 @@ class _SignUpFormState extends State<SignUpForm> {
   void cleardata(String value) {
     if (value == 'each') {
       setState(() {
-        for (int i = 0; i < day.length; i++) day[i] = false;
+        for (int i = 0; i < values.length; i++) values[i] = false;
+        //values[v % 7] = !values[v % 7];
       });
     } else
       setState(() {
         nameHolder.clear();
       });
   }
+}
 
-  Widget checkbox(String title, bool boolValue) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Text(title),
-        Checkbox(
-          value: boolValue,
-          onChanged: (bool value) {
-            setState(() {
-              switch (title) {
-                case "Mon":
-                  day[0] = value;
-                  break;
-                case "Tu":
-                  day[1] = value;
-                  break;
-                case "Wed":
-                  day[2] = value;
-                  break;
-                case "Thur":
-                  day[3] = value;
-                  break;
-                case "Fri":
-                  day[4] = value;
-                  break;
-                case "Sat":
-                  day[5] = value;
-                  break;
-                case "Sun":
-                  day[6] = value;
-                  break;
-              }
-            });
-          },
-        )
-      ],
-    );
+
+String intDayToEnglish(int day) {
+  if (day % 7 == DateTime.monday % 7) return 'Monday';
+  if (day % 7 == DateTime.tuesday % 7) return 'Tueday';
+  if (day % 7 == DateTime.wednesday % 7) return 'Wednesday';
+  if (day % 7 == DateTime.thursday % 7) return 'Thursday';
+  if (day % 7 == DateTime.friday % 7) return 'Friday';
+  if (day % 7 == DateTime.saturday % 7) return 'Saturday';
+  if (day % 7 == DateTime.sunday % 7) return 'Sunday';
+  throw '🐞 This should never have happened: $day';
+}
+
+String valuesToEnglishDays(List<bool> values, bool searchedValue) {
+  final days = <String>[];
+  for (int i = 0; i < values.length; i++) {
+    final v = values[i];
+    // Use v == true, as the value could be null, as well (disabled days).
+    if (v == searchedValue) days.add(intDayToEnglish(i));
   }
+  if (days.isEmpty) return '-';
+  return days.join(', ');
+}
+
+String pickTime(String time) {
+  var arr = time.split('(');
+  var fin = arr[1].split(')');
+  return fin[0];
 }
 
 String times;
@@ -286,7 +285,7 @@ class BasicTimeField extends StatelessWidget {
     return Column(children: <Widget>[
       DateTimeField(
         decoration: InputDecoration(
-          labelText: "Enter Event name",
+          labelText: "Enter Time",
           fillColor: Colors.white,
           border: new OutlineInputBorder(
             borderRadius: new BorderRadius.circular(25.0),
