@@ -25,6 +25,8 @@ dependencies:
   flutter:
     sdk: flutter
   weekday_selector: ^0.4.0
+  bloc: ^6.0.0
+  flutter_bloc: ^6.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -33,6 +35,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  bloc_test: ^7.0.0
+  mockito: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

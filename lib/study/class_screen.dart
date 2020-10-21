@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:lifestudy/study/add-edit_screen_class.dart';
+import 'dart:ui';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lifestudy/Bloc/add_cubit.dart';
+import 'package:lifestudy/study/add-edit_screen_class.dart';
 
 class ClassScreen extends StatefulWidget {
   @override
@@ -23,11 +26,24 @@ class _ClassScreenState extends State<ClassScreen> {
         ),
         centerTitle: true,
       ),
+      body: Column(
+        children: [
+          BlocBuilder<AddCubit, List>(builder: (context, state) {
+            return Text('$state',
+                style: TextStyle(
+                  fontSize: 20,
+                ));
+          })
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _awaitAdd();
-        },
+          setState(() {
+            context.bloc<AddCubit>().increment('xxxxxxxxxxxx');
+          });
+        },//////////////////////////////
+        //{_awaitAdd();},
         child: Icon(
           Icons.add,
         ),
@@ -37,6 +53,7 @@ class _ClassScreenState extends State<ClassScreen> {
       ),
     );
   }
+
   void _awaitAdd() async {
     final result = await Navigator.push(
         context, MaterialPageRoute(builder: (context) => AddScreenClass()));
