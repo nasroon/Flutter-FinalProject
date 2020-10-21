@@ -1,6 +1,8 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lifestudy/study/add-edit_screen_study.dart';
+
+import '../Bloc/add_cubit.dart';
 
 class StudyScreen extends StatefulWidget {
   @override
@@ -23,9 +25,24 @@ class _StudyScreenState extends State<StudyScreen> {
         ),
         centerTitle: true,
       ),
+
+      // body: Column(
+      //   children: [
+      //     BlocBuilder<AddCubit, List>(builder: (context, state) {
+      //       return new Column(
+      //           children:
+      //               state.map((item) => new Text(item.lastName)).toList());
+      //     })
+      //   ],
+      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          // setState(() {
+          //   context
+          //       .bloc<AddCubit>()
+          //       .addData(DataStudy('xxxx', 'yyyyyyy', 'zzzz'));
+          // });
           _awaitAdd();
         },
         child: Icon(
@@ -37,6 +54,9 @@ class _StudyScreenState extends State<StudyScreen> {
       ),
     );
   }
+
+
+
   void _awaitAdd() async {
     final result = await Navigator.push(
         context, MaterialPageRoute(builder: (context) => AddScreenStudy()));

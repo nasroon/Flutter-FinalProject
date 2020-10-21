@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
+import '../Bloc/add_cubit.dart';
+
 class AddScreenStudy extends StatefulWidget {
   @override
   _AddScreenStudyState createState() => _AddScreenStudyState();
@@ -159,6 +161,7 @@ class _SignUpFormState extends State<SignUpForm> {
         print(times.toString());
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Form Submitted')));
+        Navigator.pop(context);
       }
     }
 
