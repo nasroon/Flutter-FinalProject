@@ -1,0 +1,32 @@
+{
+    "project_info": {
+        "project_number": "814686068422",
+        "firebase_url": "https://flutter-final-aa5e1-668.firebaseio.com",
+        "project_id": "flutter-final-aa5e1-668",
+        "storage_bucket": "flutter-final-aa5e1-668.appspot.com"
+    },
+    "client": [{
+        "client_info": {
+            "mobilesdk_app_id": "1:814686068422:android:830a583fa890eb741c01c7",
+            "android_client_info": {
+                "package_name": "com.example.lifestudy"
+            }
+        },
+        "oauth_client": [{
+            "client_id": "814686068422-9ckpr8keefccm469p3u6mmomerrffvgu.apps.googleusercontent.com",
+            "client_type": 3
+        }],
+        "api_key": [{
+            "current_key": "AIzaSyCWoxLguQGJogzfo65wsk7rStC6ACXLTP8"
+        }],
+        "services": {
+            "appinvite_service": {
+                "other_platform_oauth_client": [{
+                    "client_id": "814686068422-9ckpr8keefccm469p3u6mmomerrffvgu.apps.googleusercontent.com",
+                    "client_type": 3
+                }]
+            }
+        }
+    }],
+    "configuration_version": "1"
+}

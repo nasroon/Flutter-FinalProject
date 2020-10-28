@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Bloc/add_cubit.dart';
 
 class AddScreenStudy extends StatefulWidget {
@@ -9,7 +10,24 @@ class AddScreenStudy extends StatefulWidget {
   _AddScreenStudyState createState() => _AddScreenStudyState();
 }
 
+List documents = [];
+
 class _AddScreenStudyState extends State<AddScreenStudy> {
+
+  final databaseReference = Firestore.instance;
+  void initState() {
+    super.initState();
+    documents.clear();
+    setState(() {
+      databaseReference
+          .collection("life")
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) => documents.add(f.data));
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,6 +50,9 @@ class _SignUpFormState extends State<SignUpForm> {
   String _name = '';
   String _stone = '';
   String _maritalStatus = 'each';
+
+  final databaseReference = Firestore.instance;
+
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +172,20 @@ class _SignUpFormState extends State<SignUpForm> {
           child: BasicDateTimeField()),
     ]));
 
+
+    void rec(BuildContext context) async {
+      await databaseReference
+          .collection("study")
+          .document((documents.length + 1).toString())
+          .setData({
+        'Course': _name,
+        'MileStone': _stone,
+        'Repeated': _maritalStatus,
+        'Time': times.toString().split('.')[0],
+      });
+      //context.bloc<AddLifeCubit>().inc();
+    }
+
     void onPressedSubmit() {
       if (_formKey.currentState.validate()) {
         _formKey.currentState.save();
@@ -158,12 +193,17 @@ class _SignUpFormState extends State<SignUpForm> {
         print("Course " + _name);
         print("Room " + _stone);
         print("Repeated " + _maritalStatus);
-        print(times.toString());
+        print(times.toString().split('.')[0]);
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Form Submitted')));
-        Navigator.pop(context);
+        rec(context);
+        documents.clear();
+        Navigator.of(context).pop();
       }
     }
+
+    formWidget.add(
+        new Text(documents.length.toString(),style: TextStyle(color: Colors.white),));
 
     formWidget.add(new RaisedButton(
         color: Colors.blue,

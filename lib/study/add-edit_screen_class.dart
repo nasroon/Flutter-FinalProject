@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:lifestudy/Bloc/add_cubit.dart';
 import 'package:weekday_selector/weekday_selector.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddScreenClass extends StatefulWidget {
   @override
   _AddScreenClassState createState() => _AddScreenClassState();
 }
 
+List documents = [];
+
 class _AddScreenClassState extends State<AddScreenClass> {
+  final databaseReference = Firestore.instance;
+  void initState() {
+    super.initState();
+    documents.clear();
+    setState(() {
+      databaseReference
+          .collection("life")
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) => documents.add(f.data));
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +53,8 @@ class _SignUpFormState extends State<SignUpForm> {
   String _course = '';
   String _room = '';
   String _maritalStatus = 'each';
+
+  final databaseReference = Firestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +149,7 @@ class _SignUpFormState extends State<SignUpForm> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text(
-          'The days that are currently selected are: ${valuesToEnglishDays(values, true)}.',
+          '${valuesToEnglishDays(values, true)}',
           style: pressed
               ? TextStyle(color: Colors.black)
               : TextStyle(color: Colors.red),
@@ -168,13 +189,26 @@ class _SignUpFormState extends State<SignUpForm> {
           pressed = false;
         });
         return false;
-      }
-       else {
+      } else {
         setState(() {
           pressed = true;
         });
       }
       return true;
+    }
+
+    void rec(BuildContext context) async {
+      await databaseReference
+          .collection("class")
+          .document((documents.length + 1).toString())
+          .setData({
+        'Course': _course,
+        'Room': _room,
+        'Day': valuesToEnglishDays(values, true),
+        'Time1': pickTime(times1),
+        'Time2': pickTime(times2)
+      });
+      //context.bloc<AddLifeCubit>().inc();
     }
 
     void onPressedSubmit() {
@@ -189,8 +223,16 @@ class _SignUpFormState extends State<SignUpForm> {
 
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Form Submitted')));
+        rec(context);
+        documents.clear();
+        Navigator.of(context).pop();
       }
     }
+
+    formWidget.add(new Text(
+      documents.length.toString(),
+      style: TextStyle(color: Colors.white),
+    ));
 
     formWidget.add(new RaisedButton(
         color: Colors.blue,
@@ -202,13 +244,11 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 }
 
-
 String pickTime(String time) {
   var arr = time.split('(');
   var fin = arr[1].split(')');
   return fin[0];
 }
-
 
 String intDayToEnglish(int day) {
   if (day % 7 == DateTime.monday % 7) return 'Monday';

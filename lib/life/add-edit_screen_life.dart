@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:lifestudy/Bloc/add_cubit.dart';
 import 'package:weekday_selector/weekday_selector.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 // class LifeParameter{
 //   final String title;
 //   LifeParameter(this.title);
@@ -14,7 +17,23 @@ class AddScreenLife extends StatefulWidget {
   _AddScreenLifeState createState() => _AddScreenLifeState();
 }
 
+List documents = [];
+
 class _AddScreenLifeState extends State<AddScreenLife> {
+  final databaseReference = Firestore.instance;
+  void initState() {
+    super.initState();
+    documents.clear();
+    setState(() {
+      databaseReference
+          .collection("life")
+          .getDocuments()
+          .then((QuerySnapshot snapshot) {
+        snapshot.documents.forEach((f) => documents.add(f.data));
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -34,13 +53,14 @@ class SignUpForm extends StatefulWidget {
 }
 
 class _SignUpFormState extends State<SignUpForm> {
-  bool pressed = true;
   final values = List.filled(7, false);
   final _formKey = GlobalKey<FormState>();
   final nameHolder = TextEditingController();
   String _name = '';
-  String _day = '';
+  int _day = 0;
   String _maritalStatus = 'each';
+
+  final databaseReference = Firestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +124,7 @@ class _SignUpFormState extends State<SignUpForm> {
           groupValue: _maritalStatus,
           onChanged: (value) {
             setState(() {
-              cleardata('each');
+              //cleardata('each');
               _maritalStatus = value;
             });
           },
@@ -135,7 +155,7 @@ class _SignUpFormState extends State<SignUpForm> {
               },
               onSaved: (value) {
                 setState(() {
-                  _day = value;
+                  _day = int.parse(value);
                 });
               },
             ),
@@ -147,40 +167,11 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
         ]),
-        RadioListTile<String>(
-          title: const Text('specific day'),
-          value: 'specific',
-          groupValue: _maritalStatus,
-          onChanged: (value) {
-            setState(() {
-              cleardata('specific');
-              _maritalStatus = value;
-            });
-          },
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              'The days that are currently selected are: ${valuesToEnglishDays(values, true)}.',
-              style: pressed
-                  ? TextStyle(color: Colors.black)
-                  : TextStyle(color: Colors.red),
-            ),
-            WeekdaySelector(
-              selectedFillColor: Colors.indigo,
-              onChanged: (v) {
-                setState(() {
-                  values[v % 7] = !values[v % 7];
-                });
-              },
-              values: values,
-            ),
-          ],
-        )
       ],
     ));
-
+    formWidget.add(new SizedBox(
+      height: 20,
+    ));
     formWidget.add(new Row(children: <Widget>[
       Text(
         "Time : ",
@@ -192,38 +183,39 @@ class _SignUpFormState extends State<SignUpForm> {
           width: MediaQuery.of(context).size.width / 2, child: BasicTimeField())
     ]));
 
-    bool checking() {
-      if (_maritalStatus == 'each')
-        return true;
-      else if (_maritalStatus == 'specific') {
-        if (valuesToEnglishDays(values, true) == '-') {
-          setState(() {
-            pressed = false;
-          });
-          return false;
-        }
-        else {
-          setState(() {
-            pressed = true;
-          });
-        }
-        return true;
-      }
+    void rec(BuildContext context) async {
+      await databaseReference
+          .collection("life")
+          .document((documents.length + 1).toString()) ////////////////////////
+          .setData({
+        'Name': _name,
+        'Repeated': _maritalStatus,
+        'Every': _day,
+        'Time': pickTime(times)
+      });
+      //context.bloc<AddLifeCubit>().inc();
     }
 
     void onPressedSubmit() {
-      if (_formKey.currentState.validate() && checking()) {
+      if (_formKey.currentState.validate()) {
         _formKey.currentState.save();
         print("Name " + _name);
-        print("Repeated " + _maritalStatus);
-        print("Every " + _day);
-        print(valuesToEnglishDays(values, true));
+        print("Every " + _day.toString());
         print(pickTime(times));
 
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Form Submitted')));
+
+        rec(context);
+        documents.clear();
+        Navigator.of(context).pop();
       }
     }
+
+    formWidget.add(new Text(
+      documents.length.toString(),
+      style: TextStyle(color: Colors.white),
+    )); /////////////////////////////
 
     formWidget.add(new RaisedButton(
         color: Colors.blue,
@@ -233,41 +225,6 @@ class _SignUpFormState extends State<SignUpForm> {
 
     return formWidget;
   }
-
-  void cleardata(String value) {
-    if (value == 'each') {
-      setState(() {
-        for (int i = 0; i < values.length; i++) values[i] = false;
-        //values[v % 7] = !values[v % 7];
-      });
-    } else
-      setState(() {
-        nameHolder.clear();
-      });
-  }
-}
-
-
-String intDayToEnglish(int day) {
-  if (day % 7 == DateTime.monday % 7) return 'Monday';
-  if (day % 7 == DateTime.tuesday % 7) return 'Tueday';
-  if (day % 7 == DateTime.wednesday % 7) return 'Wednesday';
-  if (day % 7 == DateTime.thursday % 7) return 'Thursday';
-  if (day % 7 == DateTime.friday % 7) return 'Friday';
-  if (day % 7 == DateTime.saturday % 7) return 'Saturday';
-  if (day % 7 == DateTime.sunday % 7) return 'Sunday';
-  throw '🐞 This should never have happened: $day';
-}
-
-String valuesToEnglishDays(List<bool> values, bool searchedValue) {
-  final days = <String>[];
-  for (int i = 0; i < values.length; i++) {
-    final v = values[i];
-    // Use v == true, as the value could be null, as well (disabled days).
-    if (v == searchedValue) days.add(intDayToEnglish(i));
-  }
-  if (days.isEmpty) return '-';
-  return days.join(', ');
 }
 
 String pickTime(String time) {
